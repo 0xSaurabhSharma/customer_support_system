@@ -1,5 +1,12 @@
 astra_db:
-  collection_name: "ecommercedata"
+  collection_name: "customer_review_collection"
+
+pinecone_db:
+  index_name: "customer-review-index"
+
+retriever:
+  top_k: 3
+  score_threshold: 0.5
 
 embedding_model:
   provider: "google"

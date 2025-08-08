@@ -3,7 +3,9 @@ import pandas as pd
 from dotenv import load_dotenv
 from typing import List, Tuple
 from langchain_core.documents import Document
-from langchain_astradb import AstraDBVectorStore
+# from langchain_astradb import AstraDBVectorStore
+from langchain_pinecone import PineconeVectorStore
+from pinecone import ServerlessSpec, Pinecone
 
 from utils.config_loader import load_config
 from utils.model_loader import ModelLoader
@@ -31,16 +33,20 @@ class DataIngestion:
         """
         load_dotenv()
         
-        required_vars = ["GOOGLE_API_KEY", "ASTRA_DB_API_ENDPOINT", "ASTRA_DB_APPLICATION_TOKEN", "ASTRA_DB_KEYSPACE"]
+        required_vars = ["GOOGLE_API_KEY", "PINECONE_API_KEY"
+                        #  "ASTRA_DB_API_ENDPOINT", "ASTRA_DB_APPLICATION_TOKEN"
+                        #  , "ASTRA_DB_KEYSPACE"
+                         ]
         
         missing_vars = [var for var in required_vars if os.getenv(var) is None]
         if missing_vars:
             raise EnvironmentError(f"Missing environment variables: {missing_vars}")
         
         self.google_api_key = os.getenv("GOOGLE_API_KEY")
-        self.db_api_endpoint = os.getenv("ASTRA_DB_API_ENDPOINT")
-        self.db_application_token = os.getenv("ASTRA_DB_APPLICATION_TOKEN")
-        self.db_keyspace = os.getenv("ASTRA_DB_KEYSPACE")
+        # self.db_api_endpoint = os.getenv("ASTRA_DB_API_ENDPOINT")
+        # self.db_application_token = os.getenv("ASTRA_DB_APPLICATION_TOKEN")
+        self.pinecone_api_key = os.getenv("PINECONE_API_KEY")
+        # self.db_keyspace = os.getenv("ASTRA_DB_KEYSPACE")
 
        
 
@@ -100,17 +106,32 @@ class DataIngestion:
         """
         Store documents into AstraDB vector store.
         """
-        collection_name=self.config["astra_db"]["collection_name"]
-        vstore = AstraDBVectorStore(
-            embedding= self.model_loader.load_embeddings(),
-            collection_name=collection_name,
-            api_endpoint=self.db_api_endpoint,
-            token=self.db_application_token,
-            namespace=self.db_keyspace,
-        )
-
+        # collection_name=self.config["astra_db"]["collection_name"]
+        # vstore = AstraDBVectorStore(
+        #     embedding= self.model_loader.load_embeddings(),
+        #     api_endpoint=self.db_api_endpoint,
+        #     token=self.db_application_token,
+        #     collection_name=collection_name,
+        #     namespace="default_keyspace",  
+        # )
+        
+        pinecone_client = Pinecone(pinecone_api_key=self.pinecone_api_key)
+        index_name = self.config["pinecone_db"]["index_name"]
+        
+        if index_name not in [i.name for i in pinecone_client.list_indexes()]:
+            pinecone_client.create_index(
+                name=index_name,
+                dimension=768,
+                spec=ServerlessSpec(cloud="aws", region="us-east-1"),
+                metric="cosine"
+            )
+        
+        index = pinecone_client.Index(index_name)
+        vstore = PineconeVectorStore(
+            index=index, embedding=self.model_loader.load_embeddings()
+            )
         inserted_ids = vstore.add_documents(documents)
-        print(f"Successfully inserted {len(inserted_ids)} documents into AstraDB.")
+        print(f"Successfully inserted {len(inserted_ids)} documents into PineconeDB.")
         return vstore, inserted_ids
 
     def run_pipeline(self):
