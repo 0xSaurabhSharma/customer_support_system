@@ -42,6 +42,7 @@ class ModelLoader:
         model_name = embedding_cfg["providers"][provider]["model_name"]
 
         if provider == "google":
+            print("************* load_embeddings.google")
             os.environ["GOOGLE_API_KEY"] = self.settings.GOOGLE_API_KEY
             return GoogleGenerativeAIEmbeddings(
                 model=model_name,
@@ -58,6 +59,7 @@ class ModelLoader:
         model_name = llm_cfg["providers"][provider]["model_name"]
 
         if provider == "google":
+            print("************* load_llm.google")
             os.environ["GOOGLE_API_KEY"] = self.settings.GOOGLE_API_KEY
             return ChatGoogleGenerativeAI(
                 model=model_name,
@@ -65,6 +67,7 @@ class ModelLoader:
             )
 
         elif provider == "groq":
+            print("************* load_llm.groq")
             os.environ["GROQ_API_KEY"] = self.settings.GROQ_API_KEY
             return ChatGroq(
                 model=model_name,

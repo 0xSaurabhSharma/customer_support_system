@@ -16,10 +16,11 @@ class Settings(BaseSettings):
 
     # --- LangSmith Tracing (Optional) ---
     # Set to "true" or "1" in your .env file to enable LangSmith tracing.
-    LANGSMITH_TRACING: bool = False
+    LANGSMITH_TRACING: str = "false"
     LANGSMITH_ENDPOINT: str = "https://api.smith.langchain.com"
     LANGSMITH_API_KEY: Optional[str] = None
     LANGSMITH_PROJECT: Optional[str] = None
+    
 
     @model_validator(mode='after')
     def _check_langsmith_settings(self) -> 'Settings':
@@ -27,7 +28,7 @@ class Settings(BaseSettings):
         If LangSmith tracing is enabled, this validator ensures that the
         necessary API key and project name are also provided.
         """
-        if self.LANGSMITH_TRACING:
+        if self.LANGSMITH_TRACING == "true":
             if not self.LANGSMITH_API_KEY:
                 raise ValueError(
                     "LANGSMITH_API_KEY must be set if LANGSMITH_TRACING is enabled."

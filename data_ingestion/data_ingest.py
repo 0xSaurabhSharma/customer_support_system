@@ -20,12 +20,14 @@ class DataIngestion:
     def __init__(self):
         logging.info("Initializing DataIngestion pipeline...")
 
-        self.settings = settings
         self.model_loader = ModelLoader()
         self.config = load_config()
+        self.settings = settings
 
-        base_path = self.settings.CSV_BASE_PATH or os.getcwd()
-        self.csv_path = os.path.join(base_path, "products.csv")
+
+        # Hard-coded base path (adjust as needed)
+        base_path = r"C:\Users\IamSaurabh\Code\A_Projects\customer_support_system\data"
+        self.csv_path = os.path.join(base_path, "flipkart_product_review.csv")
 
         if not os.path.isfile(self.csv_path):
             raise FileNotFoundError(f"CSV file not found: {self.csv_path}")
@@ -36,6 +38,7 @@ class DataIngestion:
         """
         Load product data from CSV and validate required columns.
         """
+        print("######### _load_csv")
         logging.info(f"Loading CSV data from {self.csv_path}...")
         df = pd.read_csv(self.csv_path)
 
@@ -50,6 +53,7 @@ class DataIngestion:
         """
         Convert product data into a list of LangChain Document objects.
         """
+        print("######### transform_data")
         logging.info("Transforming CSV data into documents...")
         documents = [
             Document(
@@ -70,6 +74,7 @@ class DataIngestion:
         """
         Store documents into Pinecone vector store.
         """
+        print("######### store_in_vector_db")
         pinecone_client = Pinecone(api_key=self.settings.PINECONE_API_KEY)
         index_name = self.config["pinecone_db"]["index_name"]
 
@@ -96,6 +101,7 @@ class DataIngestion:
         """
         Execute the full pipeline: transform data and store it in the vector DB.
         """
+        print("######### running pipeline")
         documents = self.transform_data()
         vstore, _ = self.store_in_vector_db(documents)
 

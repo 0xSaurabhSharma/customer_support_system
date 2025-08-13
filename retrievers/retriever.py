@@ -21,6 +21,8 @@ class Retriever:
     def load_retriever(self):
         if not self.vstore:
             
+            print("************* self.vectore")
+            
             # collection_name = self.config["astra_db"]["collection_name"]
             # vstore = AstraDBVectorStore(
             #     embedding= self.model_loader.load_embeddings(),
@@ -41,6 +43,8 @@ class Retriever:
         
         if not self.retriever:
             
+            print("************* self.retriever")
+            
             top_k = self.config["retriever"]["top_k"] if "retriever" in self.config else 3
             retriever = self.vstore.as_retriever(search_kwargs={"k": top_k})
             
@@ -58,6 +62,8 @@ class Retriever:
 
     
     def call_retriever(self,query:str)-> List[Document]:
+        
+        print("************* call_retriever")
         retriever=self.load_retriever()
         output=retriever.invoke(query)
         return output
@@ -65,7 +71,7 @@ class Retriever:
     
 if __name__=='__main__':
     retriever_obj = Retriever()
-    user_query = "Can you suggest good budget laptops?"
+    user_query = "Suggest me good boat headphones?"
     results = retriever_obj.call_retriever(user_query)
 
     for idx, doc in enumerate(results, 1):
