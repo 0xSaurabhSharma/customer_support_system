@@ -19,6 +19,11 @@ app = FastAPI()
 settings = Settings()
 
 
+os.environ["LANGSMITH_API_KEY"] = settings.LANGSMITH_API_KEY
+os.environ["LANGSMITH_PROJECT"] = settings.LANGSMITH_PROJECT
+os.environ["LANGSMITH_TRACING_V2"] = str(settings.LANGSMITH_TRACING_V2)
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 templates = Jinja2Templates(directory="templates")
