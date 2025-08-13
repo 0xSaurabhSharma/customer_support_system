@@ -68,6 +68,20 @@ async def chat(msg: str = Form(...)):
     Receive form POST from web UI (or JSON via `{"msg": "..."}`
     and return the raw assistant text.
     """
+    
     result = invoke_chain(msg)
     logger.info("Query: %s | Response length: %d", msg[:80], len(result))
     return result
+
+
+flow =    """
+
+memory: config & checkpoint in memory    
+
+req: username + query -> graph.invoke(query, config)
+
+graph: state -> graph build -> perform rag + + + 
+
+
+    
+    """
