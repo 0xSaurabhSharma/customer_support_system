@@ -52,7 +52,7 @@ class ModelLoader:
             raise ValueError(f"Embedding provider '{provider}' not supported")
     
     
-    def load_llm(self):
+    def load_llm(self, streaming: bool = False):
         """Load LLM based on config."""
         llm_cfg = self.config["llm"]
         provider = llm_cfg.get("default_provider", "google")
@@ -63,7 +63,7 @@ class ModelLoader:
             os.environ["GOOGLE_API_KEY"] = self.settings.GOOGLE_API_KEY
             return ChatGoogleGenerativeAI(
                 model=model_name,
-                api_key=self.settings.GOOGLE_API_KEY
+                api_key=self.settings.GOOGLE_API_KEY,
             )
 
         elif provider == "groq":
@@ -71,7 +71,7 @@ class ModelLoader:
             os.environ["GROQ_API_KEY"] = self.settings.GROQ_API_KEY
             return ChatGroq(
                 model=model_name,
-                api_key=self.settings.GROQ_API_KEY
+                api_key=self.settings.GROQ_API_KEY,
             )
 
         else:
