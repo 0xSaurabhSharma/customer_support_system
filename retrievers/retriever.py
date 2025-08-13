@@ -6,36 +6,16 @@ from typing import List
 from langchain_core.documents import Document
 from utils.config_loader import load_config
 from utils.model_loader import ModelLoader
-from dotenv import load_dotenv
+from utils.settings_loader import settings
 
 class Retriever:
     
     def __init__(self):
+        self.settings = settings
         self.model_loader=ModelLoader()
         self.config=load_config()
-        self._load_env_variables()
         self.vstore = None
         self.retriever = None
-    
-    def _load_env_variables(self):
-         
-        load_dotenv()
-         
-        required_vars = ["GOOGLE_API_KEY", "PINECONE_API_KEY"
-                        #  "ASTRA_DB_API_ENDPOINT", "ASTRA_DB_APPLICATION_TOKEN"
-                        #  , "ASTRA_DB_KEYSPACE"
-                         ]
-        
-        missing_vars = [var for var in required_vars if os.getenv(var) is None]
-        
-        if missing_vars:
-            raise EnvironmentError(f"Missing environment variables: {missing_vars}")
-
-        self.google_api_key = os.getenv("GOOGLE_API_KEY")
-        self.pinecone_api_key = os.getenv("PINECONE_API_KEY")
-        # self.db_api_endpoint = os.getenv("ASTRA_DB_API_ENDPOINT")
-        # self.db_application_token = os.getenv("ASTRA_DB_APPLICATION_TOKEN")
-        # self.db_keyspace = os.getenv("ASTRA_DB_KEYSPACE")
         
     
     def load_retriever(self):
@@ -51,7 +31,7 @@ class Retriever:
             # )      
             
             pinecone_api_key = os.getenv("PINECONE_API_KEY")
-            pc = Pinecone(api_key=pinecone_api_key)
+            pc = Pinecone(api_key=self.settings.PINECONE_API_KEY)
             
             self.vstore = PineconeVectorStore(
                 index=pc.Index(self.config["pinecone_db"]["index_name"]), 

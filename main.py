@@ -1,33 +1,29 @@
+import os
 import uvicorn
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
-
 from langchain_core.runnables import RunnablePassthrough
-
 from langchain_core.output_parsers import StrOutputParser
-
 from langchain_core.prompts import ChatPromptTemplate
 
+from utils.settings_loader import Settings
 from retrievers.retriever import Retriever
-
 from utils.model_loader import ModelLoader
-
 from prompts.prompt import PROMPT_TEMPLATES
-import os
-from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI()
+settings = Settings()
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
-
 templates = Jinja2Templates(directory="templates")
-# Allow CORS (optional for frontend)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -36,11 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-load_dotenv()
 
 retriever_obj = Retriever()
-
 model_loader = ModelLoader()
+
 
 def invoke_chain(query:str):
     
@@ -53,12 +48,12 @@ def invoke_chain(query:str):
         | prompt
         | llm
         | StrOutputParser()
-    
     )
-    
     output=chain.invoke(query)
     
     return output
+    
+    
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -72,3 +67,6 @@ async def chat(msg:str=Form(...)):
     result=invoke_chain(msg)
     print(f"Response: {result}")
     return result
+
+if __name__ == "__main__":
+    uvicorn.run(app=app, host="127.0.0.1", port=8000)
