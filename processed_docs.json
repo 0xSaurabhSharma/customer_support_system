@@ -1,14 +1,15 @@
 {
-  "1961_it_act_2025.pdf": {
-    "filename": "1961_it_act_2025.pdf",
-    "date_added": "2025-08-13T16:22:19.378620"
+  "gst_rules_2024.pdf": {
+    "filename": "gst_rules_2024.pdf",
+    "date_added": "2025-08-13T18:55:32.839691"
   },
-  "1962_it_rule_2025.pdf": {
-    "filename": "1962_it_rule_2025.pdf",
-    "date_added": "2025-08-13T16:22:55.886924"
+  "itr_act_update.pdf": {
+    "filename": "itr_act_update.pdf",
+    "date_added": "2025-08-13T18:55:33.836683"
   },
-  "flipkart_product_review.csv": {
-    "filename": "flipkart_product_review.csv",
-    "date_added": "2025-08-13T16:23:21.589093"
+  "CGST-Act-2020.pdf": {
+    "filename": "CGST-Act-2020.pdf",
+    "date_added": "2025-08-14T11:20:17.229112",
+    "status": "success"
   }
 }
