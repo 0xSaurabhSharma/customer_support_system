@@ -18,34 +18,10 @@ llm:
   default_provider: "google"  # change to "groq" if needed
   providers:
     google:
-      model_name: "gemma-3-12b-it"
+      model_name: "gemini-2.0-flash-lite"
     groq:
       model_name: "deepseek-r1-distill-llama-70b"
 
-
-
-
-
-# astra_db:
-#   collection_name: "customer_review_collection"
-
-# pinecone_db:
-#   index_name: "customer-review-index"
-
-# retriever:
-#   top_k: 3
-#   score_threshold: 0.5
-
-# embedding_model:
-#   provider: "google"
-#   model_name: "models/text-embedding-004"
-
-# retriever:
-#   top_k: 10
-
-# llm:
-#   provider: "google"
-#   model_name: "gemma-3-12b-it"
-
-#   provider: "groq"
-#   model_name: "deepseek-r1-distill-llama-70b" 
+safeguard:
+    groq:
+      model_name: "meta-llama/llama-guard-4-12b"
