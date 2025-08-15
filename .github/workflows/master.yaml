@@ -3,40 +3,87 @@ name: Deploy to Cloud Run
 on:
   push:
     branches:
-      - master  # change if needed
+      - master   # change to main if your repo uses main
 
 env:
   PROJECT_ID: customer-support-system-469104
   REGION: asia-south1
   REPO: customer-support-system-repo
-  SERVICE: customer-support-api  # change to your Streamlit service for second deployment
+  SERVICE: customer-support-api
   IMAGE: customer-support-api-image
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+      # Authenticate to GCP using the service account JSON you stored as a repo secret
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Configure Docker for Artifact Registry
-      run: gcloud auth configure-docker $REGION-docker.pkg.dev --quiet
+      # Install/configure gcloud CLI on the runner (ensures gcloud is available)
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          version: 'latest'
 
-    - name: Build and push Docker image
-      run: |
-        docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE:latest .
-        docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE:latest
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+        env:
+          REGION: ${{ env.REGION }}
 
-    - name: Deploy to Cloud Run
-      uses: google-github-actions/deploy-cloudrun@v2
-      with:
-        service: ${{ env.SERVICE }}
-        region: ${{ env.REGION }}
-        image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:latest
-        allow-unauthenticated: true
+      - name: Build and push Docker image
+        run: |
+          IMAGE_URI=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO}/${IMAGE}:latest
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+        env:
+          PROJECT_ID: ${{ env.PROJECT_ID }}
+          REGION: ${{ env.REGION }}
+          REPO: ${{ env.REPO }}
+          IMAGE: ${{ env.IMAGE }}
+
+      - name: Deploy to Cloud Run (with runtime env vars)
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:latest
+          region: ${{ env.REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+          allow_unauthenticated: true
+          env_vars: |
+            PINECONE_API_KEY=${{ secrets.PINECONE_API_KEY }}
+            GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
+            GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+            TAVILY_API_KEY=${{ secrets.TAVILY_API_KEY }}
+            LANGSMITH_TRACING_V2=true
+            LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+            LANGSMITH_API_KEY=${{ secrets.LANGSMITH_API_KEY }}
+            LANGSMITH_PROJECT=${{ secrets.LANGSMITH_PROJECT }}
+
+
+        env:
+          PROJECT_ID: ${{ env.PROJECT_ID }}
+          REGION: ${{ env.REGION }}
+          REPO: ${{ env.REPO }}
+          IMAGE: ${{ env.IMAGE }}
+          SERVICE: ${{ env.SERVICE }}
+
+      - name: Show deployed service URL
+        run: |
+          gcloud run services describe ${SERVICE} --region ${REGION} --project ${PROJECT_ID} --format="value(status.url)"
+        env:
+          PROJECT_ID: ${{ env.PROJECT_ID }}
+          REGION: ${{ env.REGION }}
+          SERVICE: ${{ env.SERVICE }}

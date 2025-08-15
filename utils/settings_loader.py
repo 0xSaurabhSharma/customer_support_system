@@ -13,7 +13,8 @@ class Settings(BaseSettings):
     PINECONE_API_KEY: str
     GROQ_API_KEY: str
     GOOGLE_API_KEY: str
-
+    TAVILY_API_KEY: str 
+    
     # --- LangSmith Tracing (Optional) ---
     # Set to "true" or "1" in your .env file to enable LangSmith tracing.
     LANGSMITH_TRACING_V2: str = "true"
