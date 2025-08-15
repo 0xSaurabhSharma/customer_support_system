@@ -76,3 +76,20 @@ class ModelLoader:
 
         else:
             raise ValueError(f"LLM provider '{provider}' not supported")
+        
+        
+    def load_safeguard (self):
+        """Load the safeguard llm."""
+        
+        model_name = self.config["safeguard"]["groq"]["model_name"]
+        return ChatGroq(
+            model=model_name,
+            api_key=self.settings.GROQ_API_KEY,
+        )
+        
+
+
+
+# if __name__ == "__main__":
+#     model_loader = ModelLoader()
+#     model_loader.load_safeguard()
