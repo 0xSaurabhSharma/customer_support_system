@@ -2,16 +2,18 @@ from typing import Literal
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from agents.graph_utilities import AgentState, router_llm, judge_llm, answer_llm, RouteDecision, RagJudge
 from agents.tools import rag_search_tool, web_search_tool
+from prompts.prompt import PROMPT_TEMPLATES
 
 # ── Node 1: decision/router ─────────────────────────────────────────
 def router_node(state: AgentState) -> AgentState:
     # Use full message history with a system prompt
-    system_prompt = (
-        "You are a router that decides how to handle user queries:\n"
-        "- Use 'end' for pure greetings/small-talk (also provide a 'reply') and answer that is already in the current conversation chat history\n"
-        "- Use 'rag' when knowledge base lookup is needed\n"
-        "- Use 'answer' when you can answer directly without external info"
-    )
+    system_prompt = PROMPT_TEMPLATES["router_prompt"]
+    # system_prompt = (
+    #     "You are a router that decides how to handle user queries:\n"
+    #     "- Use 'end' for pure greetings/small-talk (also provide a 'reply') and answer that is already in the current conversation chat history\n"
+    #     "- Use 'rag' when knowledge base lookup is needed\n"
+    #     "- Use 'answer' when you can answer directly without external info"
+    # )
     messages = [SystemMessage(content=system_prompt)] + state["messages"]
     result: RouteDecision = router_llm.invoke(messages)
 
@@ -29,10 +31,12 @@ def rag_node(state: AgentState) -> AgentState:
 
     # Use structured output to judge if RAG results are sufficient
     judge_messages = [
-        ("system", (
-            "You are a judge evaluating if the retrieved information is sufficient "
-            "to answer the user's question. Consider both relevance and completeness."
-        )),
+        ("system", PROMPT_TEMPLATES["judge_prompt"]
+        #  (
+        #     "You are a judge evaluating if the retrieved information is sufficient "
+        #     "to answer the user's question. Consider both relevance and completeness."
+        # )
+         ),
         ("user", f"Question: {query}\n\nRetrieved info: {chunks}\n\nIs this sufficient to answer the question?")
     ]
 
