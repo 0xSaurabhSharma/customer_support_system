@@ -54,7 +54,7 @@ contextualise_chain = (CONTEXT_PROMPT | llm | StrOutputParser()).with_config(run
 
 policy_prompt_template = PROMPT_TEMPLATES["policy_prompt_template"]
 
-policy_chain = ChatPromptTemplate.from_template(policy_prompt_template) | llm
+policy_chain = (ChatPromptTemplate.from_template(policy_prompt_template) | llm).with_config(run_name="Policy Check")
 
 @chain
 def check_policy(inputs: dict) -> str:
@@ -73,24 +73,24 @@ def check_policy(inputs: dict) -> str:
 #  HELPER FUNCTIONS & MODELS
 # ==================================================================
 
-def check_prompt_safety(prompt: str):
-    """Safety and Policy security check"""
-    safety = llm_guard.invoke(prompt)
+# def check_prompt_safety(prompt: str):
+#     """Safety and Policy security check"""
+#     safety = llm_guard.invoke(prompt)
     
-    if safety == "safe":
-        policy = """ some prompt"""
-        policy_prompt = ChatPromptTemplate.from_messages([
-            ("system", policy),
-            ("human", "{input}")
-        ])
-        chain = policy_prompt | llm 
+#     if safety == "safe":
+#         policy = """ some prompt"""
+#         policy_prompt = ChatPromptTemplate.from_messages([
+#             ("system", policy),
+#             ("human", "{input}")
+#         ])
+#         chain = (policy_prompt | llm ).with_config(run_name="Guard Check")
         
-        policy_check = chain.invoke({"input": prompt})
+#         policy_check = chain.invoke({"input": prompt})
         
-        if policy_check == "safe":
-            return True
+#         if policy_check == "safe":
+#             return True
     
-    return False
+#     return False
 
 def handle_guardrail_failure(error_type: str) -> str:
     """Returns a user-friendly message for a guardrail failure."""

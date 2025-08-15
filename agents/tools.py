@@ -4,10 +4,10 @@ from services.data_processing_service import vectorstore
 import os
 
 # Initialize Tavily search
-tavily = TavilySearch(max_results=3, topic="general")
+tavily = (TavilySearch(max_results=3, topic="general")).with_config(run_name="Web Seearch Node")
 
 # Create retriever from vectorstore
-retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+retriever = (vectorstore.as_retriever(search_kwargs={"k": 3})).with_config(run_name="Retriever Node")
 
 @tool
 def web_search_tool(query: str) -> str:

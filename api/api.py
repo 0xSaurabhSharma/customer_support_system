@@ -57,7 +57,7 @@ async def invoke_chain(query: str) -> str:
         | prompt
         | llm
         | StrOutputParser()
-    )
+    ).with_config(run_name="Cupport RAG")
 
     try:
         output = await chain.ainvoke(query) 
@@ -116,17 +116,17 @@ def chat_agent(query_input: QueryInput):
         answer = last_message.content if last_message else "I couldn't generate a response at this time."
 
         # --- Step 6: OUTPUT Policy Guard ---
-        policy_check_result = check_policy.invoke({
-            "user_question": query_input.question,
-            "rag_answer": answer
-        })
+        # policy_check_result = check_policy.invoke({
+        #     "user_question": query_input.question,
+        #     "rag_answer": answer
+        # })
 
-        final_answer = answer if policy_check_result == "SAFE" else policy_check_result
+        # final_answer = answer if policy_check_result == "SAFE" else policy_check_result
 
         # --- Step 7: Store in history ---
-        insert_chat_history(session_id, query_input.question, final_answer, query_input.model.value)
+        insert_chat_history(session_id, query_input.question, answer, query_input.model.value)
 
-        return QueryResponse(answer=final_answer, session_id=session_id, model=query_input.model)
+        return QueryResponse(answer=answer, session_id=session_id, model=query_input.model)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chat error: {str(e)}")

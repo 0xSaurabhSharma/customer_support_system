@@ -19,9 +19,9 @@ class RagJudge(BaseModel):
 
 
 # ── LLM instances with structured output where needed 
-router_llm = llm.with_structured_output(RouteDecision)
-judge_llm  = llm.with_structured_output(RagJudge)
-answer_llm = llm
+router_llm = (llm.with_structured_output(RouteDecision)).with_config(run_name="Router Node")
+judge_llm  = (llm.with_structured_output(RagJudge)).with_config(run_name="Judge Node")
+answer_llm = (llm).with_config(run_name="Answer Node")
 
 
 
